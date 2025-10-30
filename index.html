@@ -398,15 +398,15 @@
 
         const initSupabase = async () => {
             // Check if user has filled in the config
-            if (!SUPABASE_URL || SUPABASE_URL === "PASTE_YOUR_SUPABASE_URL_HERE") {
+            if (!SUPABASE_URL || SUPABASE_URL === "https://qxsczgqxtxrkirdwyjmi.supabase.co") {
                 showMessage("FATAL ERROR: Supabase URL missing. Please edit the HTML file.");
                 return;
             }
-            if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === "PASTE_YOUR_SUPABASE_ANON_KEY_HERE") {
+            if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4c2N6Z3F4dHhya2lyZHd5am1pIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTgzNzQwNiwiZXhwIjoyMDc3NDEzNDA2fQ.7g2qk2pBhWqS3kSM7mJH8JeYI5JCPafz9pq8Y1QznHw") {
                 showMessage("FATAL ERROR: Supabase Anon Key missing. Please edit the HTML file.");
                 return;
             }
-            if (!GEMINI_API_KEY || GEMINI_API_KEY === "PASTE_YOUR_GEMINI_API_KEY_HERE") {
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === "AIzaSyBlisAKuJfhZRR9ag1o5EboDfMPD3B42qk") {
                 showMessage("FATAL ERROR: Gemini API Key missing. Please edit the HTML file.");
                 return;
             }
