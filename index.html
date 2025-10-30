@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slapegories Multiplayer Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900;bold&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh; 
+        }
+        /* Custom spinner for loading state */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Custom styles for radio buttons */
+        input[type="radio"] {
+            accent-color: #a78bfa; /* purple-400 equivalent */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-6 min-h-screen flex items-center justify-center">
+
+    <main class="bg-gray-800 p-6 md:p-10 rounded-2xl shadow-2xl w-full max-w-4xl mx-auto">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-center mb-4 text-purple-400">
+            Slapegories LIVE
+        </h1>
+        <p class="text-center text-gray-300 mb-6 text-sm">
+            Real-time multiplayer game. Changes update instantly on all devices!
+        </p>
+
+        <div id="message-area" class="text-red-400 text-center h-6 mb-4 font-semibold"></div>
+
+        <div class="bg-gray-700 p-6 rounded-xl mb-6 border border-gray-600">
+            <h2 class="text-2xl font-bold mb-4 text-center text-purple-300">Game Session Setup</h2>
+
+            <div class="flex flex-col md:flex-row gap-4 mb-4">
+                <div class="flex-1">
+                    <label for="option-create" class="flex items-center space-x-3 p-3 bg-gray-600 rounded-lg cursor-pointer hover:bg-gray-500 transition-colors">
+                        <input type="radio" name="game-mode" id="option-create" value="create" checked class="h-5 w-5">
+                        <span class="font-semibold text-lg">Create New Game (Host)</span>
+                    </label>
+                </div>
+                
+                <div class="flex-1">
+                    <label for="option-join" class="flex items-center space-x-3 p-3 bg-gray-600 rounded-lg cursor-pointer hover:bg-gray-500 transition-colors">
+                        <input type="radio" name="game-mode" id="option-join" value="join" class="h-5 w-5">
+                        <span class="font-semibold text-lg">Join Existing Game</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="join-input-section" class="flex gap-2 hidden">
+                <input type="text" id="join-game-id-input" placeholder="Paste Game ID from host..." class="bg-gray-800 text-white border border-gray-600 rounded-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500">
+                <button id="join-game-btn" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 px-5 rounded-lg transition-all duration-200 shadow-md disabled:opacity-50">
+                    Join
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-purple-900/50 p-3 rounded-lg text-center mb-6 border border-purple-700">
+            <h2 class="text-xl font-bold text-purple-300">Current Game ID:</h2>
+            <p id="game-id-display" class="font-mono text-2xl font-bold text-yellow-300 break-all">
+                Loading...
+            </p>
+            <p class="text-xs text-gray-400 mt-1" id="game-mode-status">
+                Waiting for connection...
+            </p>
+        </div>
+
+
+        <div class="flex flex-col md:flex-row gap-6 mb-6">
+            <div class="bg-white text-gray-900 rounded-xl p-6 w-full md:w-1/3 h-48 flex items-center justify-center text-center shadow-lg transition-all duration-300 transform">
+                <span id="letter-card" class="text-8xl md:text-9xl font-extrabold text-purple-600">?</span>
+            </div>
+            <div class="bg-white text-gray-900 rounded-xl p-6 w-full md:w-2/3 h-48 flex items-center justify-center text-center shadow-lg transition-all duration-300">
+                <span id="category-card" class="text-2xl md:text-3xl font-semibold">Loading game state...</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 mb-6">
+            <button id="change-letter-btn" class="w-full sm:w-1/3 bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-400" disabled>
+                New Letter
+            </button>
+            <button id="change-category-btn" class="w-full sm:w-1/3 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-400" disabled>
+                New Category
+            </button>
+            <button id="change-both-btn" class="w-full sm:w-1/3 bg-purple-700 hover:bg-purple-800 text-white text-lg font-bold py-3 px-4 rounded-lg shadow-md transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-400" disabled>
+                New Both
+            </button>
+        </div>
+
+
+        <div class="bg-gray-700 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-center text-green-400">Scoreboard (Real-time)</h2>
+            
+            <div id="player-inputs" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                </div>
+
+            <button id="update-players-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition-all duration-200 shadow-md">
+                Update Player Names
+            </button>
+
+            <div id="score-display-container" class="mt-4">
+                <h3 class="text-xl font-semibold mb-3 text-center">Round Scores</h3>
+                <div id="scoreboard-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    </div>
+                <div class="mt-4 text-center">
+                    <button id="reset-scores-btn" class="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold py-1 px-3 rounded-lg transition-all duration-200">
+                        Reset All Scores
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="bg-gray-700 p-6 rounded-lg mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-center text-indigo-300">
+                ✨ Judge My Answer (Gemini AI)
+            </h2>
+            <div class="flex flex-col gap-3 mb-4">
+                <input type="text" id="answer-input" placeholder="Type your answer here..." class="bg-gray-800 text-white border border-gray-600 rounded-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button id="suggest-answer-btn" class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-5 rounded-lg transition-all duration-200 shadow-md whitespace-nowrap">
+                        Suggest Answer
+                    </button>
+                    <button id="judge-answer-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-lg transition-all duration-200 shadow-md">
+                        Judge It!
+                    </button>
+                </div>
+            </div>
+            <div id="judge-result" class="text-center min-h-6 mt-3 text-lg font-semibold text-gray-300">
+                </div>
+        </div>
+        
+        <div class="bg-gray-700 p-4 rounded-lg flex items-center justify-between gap-4 mb-8">
+            <div id="timer-display" class="text-5xl font-mono text-yellow-400 font-bold">
+                01:00
+            </div>
+            <div class="flex gap-2">
+                <button id="start-timer-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-5 rounded-lg transition-all duration-200">Start</button>
+                <button id="reset-timer-btn" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-5 rounded-lg transition-all duration-200">Reset</button>
+            </div>
+        </div>
+
+        <div class="bg-gray-700 p-6 rounded-lg">
+            <h2 class="text-2xl font-bold mb-4 text-center">Category Settings</h2>
+            
+            <h3 class="text-xl font-semibold mb-3 text-gray-300">Category Source:</h3>
+            <div class="flex flex-wrap justify-center gap-4 mb-6 text-sm sm:text-base">
+                <label class="flex items-center space-x-2">
+                    <input type="radio" name="category-source" value="predefined" id="source-predefined" checked class="text-purple-600">
+                    <span>Pre-defined List</span>
+                </label>
+                <label class="flex items-center space-x-2">
+                    <input type="radio" name="category-source" value="custom" id="source-custom" class="text-purple-600">
+                    <span>Shared Custom List</span>
+                </label>
+                <label class="flex items-center space-x-2">
+                    <input type="radio" name="category-source" value="ai" id="source-ai" class="text-purple-600">
+                    <span>AI Generated</span>
+                </label>
+            </div>
+
+            <div id="ai-difficulty-section" class="hidden bg-gray-600 p-4 rounded-lg mb-6">
+                <h3 class="text-xl font-semibold mb-2">Select Difficulty:</h3>
+                <select id="ai-difficulty" class="w-full bg-gray-800 text-white p-2 rounded-lg border border-gray-500 focus:ring-purple-500 focus:border-purple-500">
+                    <option value="Any">Any Difficulty</option>
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                    <option value="Very Hard">Very Hard</option>
+                </select>
+            </div>
+
+
+            <div id="my-categories-section" class="hidden">
+                <h3 class="text-xl font-semibold mb-3">Add Shared Categories</h3>
+                <div class="flex mb-4">
+                    <input type="text" id="new-category-input" placeholder="e.g., 'Types of Dogs'" class="bg-gray-800 text-white border border-gray-600 rounded-l-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <button id="add-category-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-5 rounded-r-lg transition-all duration-200">Add</button>
+                </div>
+
+                <h3 class="text-xl font-semibold mb-3">Shared Category List (Cloud Saved)</h3>
+                <div id="my-category-list-container" class="bg-gray-800 p-4 rounded-lg max-h-48 overflow-y-auto">
+                    <ul id="my-category-list" class="space-y-2">
+                        </ul>
+                    <p id="empty-list-msg" class="text-gray-400 text-center">Your list is empty. Add some categories above!</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Setting up Firebase and Firestore instances globally within the script scope
+        let app, db, auth, userId, gameDocRef, customCategoriesCollectionRef;
+        let unsubscribeGameState = null;
+        let unsubscribeCategories = null;
+        let activeGameId = null; 
+        let isHost = true; 
+        
+        // Global Constants
+        const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        const PREDEFINED_CATEGORIES = [
+            "A Boy's Name", "A Girl's Name", "Country", "City", "Animal",
+            "Type of Food", "Movie Title", "Book Title", "Brand Name",
+            "Item in a Supermarket", "Something in a Kitchen", "Song Title",
+            "Famous Person", "Sport", "Clothing Item", "Thing That is Round",
+            "Vegetable", "Fruit", "Historical Figure", "TV Show",
+            "Something You Shout", "Word ending in -LY"
+        ];
+        const MAX_PLAYERS = 6;
+        const DEFAULT_GAME_STATE = {
+            letter: '?',
+            category: 'Welcome! Get new cards to start the game.',
+            players: [],
+            timerRunning: false,
+            timerTime: 60,
+            lastUpdated: Date.now()
+        };
+
+        // --- LLM API Setup ---
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+        // --- DOM Elements ---
+        const letterCard = document.getElementById('letter-card');
+        const categoryCard = document.getElementById('category-card');
+        const gameIdDisplay = document.getElementById('game-id-display');
+        const gameModeStatus = document.getElementById('game-mode-status'); 
+        
+        // Game Mode Elements
+        const gameModeRadios = document.querySelectorAll('input[name="game-mode"]');
+        const joinInputSection = document.getElementById('join-input-section');
+        const joinGameIdInput = document.getElementById('join-game-id-input');
+        const joinGameBtn = document.getElementById('join-game-btn');
+        
+        // Card Control Buttons
+        const changeLetterBtn = document.getElementById('change-letter-btn');
+        const changeCategoryBtn = document.getElementById('change-category-btn');
+        const changeBothBtn = document.getElementById('change-both-btn');
+        
+        const timerDisplay = document.getElementById('timer-display');
+        const startTimerBtn = document.getElementById('start-timer-btn');
+        const resetTimerBtn = document.getElementById('reset-timer-btn');
+        
+        const messageArea = document.getElementById('message-area');
+
+        // Judge Feature Elements
+        const answerInput = document.getElementById('answer-input');
+        const suggestAnswerBtn = document.getElementById('suggest-answer-btn'); 
+        const judgeAnswerBtn = document.getElementById('judge-answer-btn');
+        const judgeResult = document.getElementById('judge-result');
+        
+        // Scoreboard Elements
+        const playerInputsContainer = document.getElementById('player-inputs');
+        const updatePlayersBtn = document.getElementById('update-players-btn');
+        const scoreboardGrid = document.getElementById('scoreboard-grid');
+        const resetScoresBtn = document.getElementById('reset-scores-btn');
+
+        // Category Settings Elements
+        const categorySourceRadios = document.querySelectorAll('input[name="category-source"]');
+        const aiDifficultySelector = document.getElementById('ai-difficulty');
+        const aiDifficultySection = document.getElementById('ai-difficulty-section');
+        const myCategoriesSection = document.getElementById('my-categories-section');
+        const newCategoryInput = document.getElementById('new-category-input');
+        const addCategoryBtn = document.getElementById('add-category-btn');
+        const myCategoryList = document.getElementById('my-category-list');
+        const emptyListMsg = document.getElementById('empty-list-msg');
+        
+        // --- Game State (Local Mirror of Firestore) ---
+        let currentGameState = { ...DEFAULT_GAME_STATE };
+        let customCategoryData = []; // Array of { id, name } objects
+
+        // --- Helper Functions ---
+        const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
+        const formatTime = (seconds) => {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        };
+        const showMessage = (msg, isError = true) => {
+            messageArea.textContent = msg;
+            messageArea.className = isError ? 'text-red-400 text-center h-6 mb-4 font-semibold' : 'text-green-400 text-center h-6 mb-4 font-semibold';
+        };
+        const clearMessage = () => { messageArea.textContent = ''; };
+        const setControlState = (isDisabled) => {
+            // Only the host should control game flow (letter/category/timer/reset)
+            const controlButtons = [changeLetterBtn, changeCategoryBtn, changeBothBtn, startTimerBtn, resetTimerBtn];
+            controlButtons.forEach(btn => btn.disabled = isDisabled);
+            
+            // Player and Score changes are allowed for all participants
+            [updatePlayersBtn, resetScoresBtn].forEach(btn => btn.disabled = false); 
+        };
+        const enableGameControls = () => setControlState(false);
+        const disableGameControls = () => setControlState(true);
+        
+        // --- Game ID Switcher ---
+
+        const setGameSessionId = (newId, isNewHost = false) => {
+            if (!db) return;
+            
+            // 1. Unsubscribe from old session if exists
+            if (unsubscribeGameState) {
+                unsubscribeGameState(); 
+                unsubscribeGameState = null;
+            }
+            
+            // 2. Set new state
+            activeGameId = newId;
+            isHost = isNewHost;
+            
+            // 3. Update UI
+            gameIdDisplay.textContent = activeGameId;
+            gameModeStatus.textContent = isHost 
+                ? 'You are currently Hosting this game.' 
+                : 'You are currently Joined to this game.';
+            
+            // 4. Update Document Reference and Listener
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            gameDocRef = doc(db, `/artifacts/${appId}/public/data/game_sessions`, activeGameId);
+            
+            if (isHost) {
+                enableGameControls();
+            } else {
+                // If joining, disable controls that affect the game state
+                disableGameControls();
+            }
+            
+            listenToGameState();
+            
+            showMessage(isHost ? `New game session created/reloaded with ID: ${activeGameId}` : `Successfully joined game ID: ${activeGameId}`, false);
+        };
+
+        const joinGame = async () => {
+            const joinId = joinGameIdInput.value.trim();
+            if (!joinId || joinId.length < 10) { 
+                showMessage("Please enter a valid Game ID.");
+                return;
+            }
+            
+            joinGameBtn.disabled = true;
+            showMessage("Checking game existence...", false);
+
+            try {
+                // Check if the game session document exists
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const tempDocRef = doc(db, `/artifacts/${appId}/public/data/game_sessions`, joinId);
+                const docSnap = await getDoc(tempDocRef);
+
+                if (docSnap.exists()) {
+                    setGameSessionId(joinId, false); // Join mode
+                    joinGameIdInput.value = ''; // Clear input on success
+                } else {
+                    showMessage("Error: No active game found with that ID. Check the ID and try again.");
+                }
+            } catch (error) {
+                console.error("Error joining game:", error);
+                showMessage("An error occurred while trying to join the game.");
+            } finally {
+                joinGameBtn.disabled = false;
+            }
+        };
+
+        const handleGameModeChange = (e) => {
+            const mode = e.target.value;
+            joinInputSection.classList.toggle('hidden', mode !== 'join');
+            clearMessage();
+
+            if (mode === 'create') {
+                // Switch back to hosting using the user's own ID
+                if (userId) {
+                    setGameSessionId(userId, true);
+                } else {
+                    showMessage("Authentication not ready. Cannot create game yet.");
+                }
+            }
+        };
+
+        // --- FIREBASE CORE ---
+
+        const initFirebase = async () => {
+            // Retrieve global variables
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+            if (!firebaseConfig || !firebaseConfig.projectId) {
+                showMessage("FATAL ERROR: Firebase configuration missing.");
+                return;
+            }
+            
+            setLogLevel('Debug');
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        
+                        // Set initial game session to the user's own ID (Host mode)
+                        setGameSessionId(userId, true); 
+
+                        // Define custom categories collection (always global)
+                        customCategoriesCollectionRef = collection(db, `/artifacts/${appId}/public/data/custom_categories`);
+                        
+                        // Start listening to categories
+                        listenToCustomCategories();
+                        
+                        // Render player inputs based on the initial state
+                        renderPlayerInputs(currentGameState.players);
+                        
+                    } else {
+                        userId = crypto.randomUUID(); // Fallback for unauthenticated
+                        gameIdDisplay.textContent = 'Auth Failed';
+                        disableGameControls();
+                        gameModeStatus.textContent = 'Authentication failed. Please check connection.';
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase Auth Error:", error);
+                showMessage("Authentication failed. Cannot start multiplayer game.");
+                userId = crypto.randomUUID();
+            }
+        };
+
+        // --- FIRESTORE LISTENERS & WRITERS ---
+
+        const listenToGameState = () => {
+            if (!gameDocRef) return; // Must have an active game ID set
+
+            if (unsubscribeGameState) unsubscribeGameState(); 
+            
+            unsubscribeGameState = onSnapshot(gameDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    currentGameState = docSnap.data();
+                    updateGameUI(currentGameState);
+                } else {
+                    // Only the host should attempt to create a new document if it doesn't exist
+                    if (isHost) {
+                         // Initialize new game state in Firestore
+                        setDoc(gameDocRef, DEFAULT_GAME_STATE)
+                            .then(() => {
+                                currentGameState = DEFAULT_GAME_STATE;
+                                updateGameUI(currentGameState);
+                                showMessage("New multiplayer game session initialized.", false);
+                            })
+                            .catch(err => console.error("Error creating game doc:", err));
+                    } else {
+                        // A viewer joined a game that doesn't exist anymore.
+                        showMessage("Error: The host's game session has been deleted or expired.", true);
+                        disableGameControls(); 
+                    }
+                }
+            }, (error) => {
+                console.error("Error listening to game state:", error);
+                showMessage("Lost connection to game session. Check console for details.");
+            });
+        };
+
+        const updateGameData = async (data) => {
+            if (!gameDocRef) return;
+            try {
+                // If not host, prevent game-changing updates (letter/category/timer)
+                if (!isHost) {
+                    if (data.letter || data.category || data.timerRunning !== undefined || data.timerTime !== undefined) {
+                        showMessage("You must be the host to change the letter, category, or timer.", true);
+                        // Only allow player/score updates for non-hosts
+                        const allowedUpdates = {};
+                        if (data.players) allowedUpdates.players = data.players;
+                        if (Object.keys(allowedUpdates).length > 0) {
+                            await setDoc(gameDocRef, { ...allowedUpdates, lastUpdated: Date.now() }, { merge: true });
+                        }
+                        return;
+                    }
+                }
+
+                await setDoc(gameDocRef, { ...data, lastUpdated: Date.now() }, { merge: true });
+            } catch (error) {
+                console.error("Error updating game data:", error);
+                showMessage("Failed to update game state. Check connection.");
+            }
+        };
+        
+        // --- UI UPDATERS (Called by onSnapshot) ---
+
+        const updateGameUI = (state) => {
+            letterCard.textContent = state.letter || '?';
+            categoryCard.textContent = state.category || '...';
+            
+            // Timer sync (simple, non-perfect sync for this scope)
+            if (state.timerRunning) {
+                startLocalTimer(state.timerTime);
+            } else {
+                resetLocalTimer(state.timerTime);
+            }
+
+            // Scoreboard UI update
+            renderScoreboard(state.players);
+        };
+        
+        // --- CATEGORY PERSISTENCE (Shared Cloud List) ---
+
+        const listenToCustomCategories = () => {
+            if (!customCategoriesCollectionRef) return;
+
+            if (unsubscribeCategories) unsubscribeCategories(); 
+            
+            unsubscribeCategories = onSnapshot(customCategoriesCollectionRef, (snapshot) => {
+                customCategoryData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    name: doc.data().name
+                }));
+                updateCategoryListUI();
+            }, (error) => {
+                console.error("Error listening to categories:", error);
+                showMessage("Error loading custom categories.");
+            });
+        };
+
+        const addCustomCategory = async (categoryName) => {
+            if (!categoryName) return;
+
+            // Check locally first (using current state)
+            if (customCategoryData.some(c => c.name.toLowerCase() === categoryName.toLowerCase())) {
+                showMessage("That category is already in the shared list.");
+                return;
+            }
+
+            try {
+                // Add the category to Firestore
+                await setDoc(doc(customCategoriesCollectionRef), {
+                    name: categoryName,
+                    creatorId: userId,
+                    createdAt: Date.now()
+                });
+                clearMessage();
+            } catch (error) {
+                console.error("Error adding category:", error);
+                showMessage("Failed to add category to the shared list.");
+            }
+        };
+
+        const deleteCustomCategory = async (id) => {
+            try {
+                await deleteDoc(doc(customCategoriesCollectionRef, id));
+            } catch (error) {
+                console.error("Error deleting category:", error);
+                showMessage("Failed to delete category.");
+            }
+        };
+
+        const updateCategoryListUI = () => {
+            myCategoryList.innerHTML = ''; 
+            
+            if (customCategoryData.length > 0) {
+                emptyListMsg.classList.add('hidden');
+                customCategoryData.forEach((category) => {
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center bg-gray-600 p-2 rounded-lg';
+                    // Only allow deletion if the current user created it (optional for simplicity)
+                    const isCreator = category.creatorId === userId; 
+                    li.innerHTML = `
+                        <span class="text-gray-100">${category.name}</span>
+                        ${isCreator ? `<button data-id="${category.id}" class="delete-btn bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-all duration-200">
+                            &times;
+                        </button>` : `<span class="text-gray-400 text-xs">Shared</span>`}
+                    `;
+                    myCategoryList.appendChild(li);
+                });
+            } else {
+                emptyListMsg.classList.remove('hidden');
+            }
+        };
+
+        // --- SCOREBOARD FUNCTIONS (Updated for Minus Points) ---
+        
+        const renderPlayerInputs = (players) => {
+            playerInputsContainer.innerHTML = '';
+            for (let i = 1; i <= MAX_PLAYERS; i++) {
+                const player = players.find(p => p.id === i) || { id: i, name: `Player ${i}`, score: 0 };
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `player-name-${i}`;
+                input.placeholder = `Player ${i}`;
+                input.value = player.name;
+                input.className = 'bg-gray-600 text-white border border-gray-500 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-green-400';
+                playerInputsContainer.appendChild(input);
+            }
+        };
+        
+        const updatePlayerNames = () => {
+            const newPlayers = [];
+            for (let i = 1; i <= MAX_PLAYERS; i++) {
+                const input = document.getElementById(`player-name-${i}`);
+                const existingPlayer = currentGameState.players.find(p => p.id === i);
+                newPlayers.push({
+                    id: i,
+                    name: input.value.trim() || `Player ${i}`,
+                    score: existingPlayer ? existingPlayer.score : 0 // Preserve score
+                });
+            }
+            updateGameData({ players: newPlayers });
+            showMessage("Player names updated.", false);
+        };
+
+        const renderScoreboard = (players) => {
+            scoreboardGrid.innerHTML = '';
+            if (players.length === 0) {
+                 // Initialize players if none exist
+                if (isHost) {
+                    const initialPlayers = Array(MAX_PLAYERS).fill(null).map((_, i) => ({
+                        id: i + 1,
+                        name: `Player ${i + 1}`,
+                        score: 0
+                    }));
+                    updateGameData({ players: initialPlayers });
+                }
+                return; // Wait for the updateGameData to populate players
+            }
+            
+            players.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'bg-gray-800 p-3 rounded-xl flex flex-col items-center shadow-md';
+                div.innerHTML = `
+                    <span class="text-lg font-bold text-green-300 truncate w-full text-center mb-1">${player.name}</span>
+                    <span id="score-${player.id}" class="text-4xl font-mono text-white mb-2">${player.score}</span>
+                    <button data-id="${player.id}" data-action="plus" class="score-increment-btn w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-1 rounded-md transition-all duration-200 shadow-sm mb-1">
+                        Win Round (+1)
+                    </button>
+                    <button data-id="${player.id}" data-action="minus" class="score-increment-btn w-full bg-red-500 hover:bg-red-600 text-white font-bold py-1 rounded-md transition-all duration-200 shadow-sm">
+                        Wrong Answer (-1)
+                    </button>
+                `;
+                scoreboardGrid.appendChild(div);
+            });
+        };
+
+        const handleScoreIncrement = (e) => {
+            if (e.target.classList.contains('score-increment-btn')) {
+                const action = e.target.dataset.action; // Get 'plus' or 'minus'
+                const playerId = parseInt(e.target.dataset.id, 10);
+                const players = [...currentGameState.players];
+                const playerIndex = players.findIndex(p => p.id === playerId);
+                
+                if (playerIndex !== -1) {
+                    if (action === 'plus') {
+                        players[playerIndex].score++;
+                        showMessage(`Point awarded to ${players[playerIndex].name}!`, false);
+                    } else if (action === 'minus') {
+                        // Ensure score doesn't go below 0
+                        players[playerIndex].score = Math.max(0, players[playerIndex].score - 1);
+                        showMessage(`Point subtracted from ${players[playerIndex].name}.`, true); 
+                    }
+                    updateGameData({ players });
+                }
+            }
+        };
+
+        const resetScores = () => {
+            const players = currentGameState.players.map(p => ({ ...p, score: 0 }));
+            updateGameData({ players });
+            showMessage("All scores reset!", false);
+        };
+        
+        // --- TIMER FUNCTIONS (Synchronized) ---
+        
+        let localTimerInterval = null;
+        let localTimeLeft = 60;
+        
+        const startLocalTimer = (remoteTime) => {
+            if (localTimerInterval) clearInterval(localTimerInterval);
+            localTimeLeft = remoteTime;
+            
+            startTimerBtn.textContent = 'Pause';
+            
+            localTimerInterval = setInterval(() => {
+                localTimeLeft--;
+                timerDisplay.textContent = formatTime(localTimeLeft);
+                
+                if (localTimeLeft <= 0) {
+                    clearInterval(localTimerInterval);
+                    timerDisplay.classList.add('text-red-500');
+                    timerDisplay.classList.remove('text-yellow-400');
+                    // Only the host should attempt to stop it in Firestore
+                    if (isHost && currentGameState.timerRunning) {
+                        updateGameData({ timerRunning: false, timerTime: 0 });
+                    }
+                    showMessage("Time's up!", false);
+                    startTimerBtn.textContent = 'Start';
+                }
+            }, 1000);
+        };
+
+        const resetLocalTimer = (remoteTime = 60) => {
+            if (localTimerInterval) clearInterval(localTimerInterval);
+            localTimeLeft = remoteTime;
+            timerDisplay.textContent = formatTime(localTimeLeft);
+            timerDisplay.classList.remove('text-red-500');
+            timerDisplay.classList.add('text-yellow-400');
+            startTimerBtn.textContent = 'Start';
+            if (remoteTime === 60) clearMessage();
+        };
+
+        const toggleTimer = () => {
+            if (!isHost) {
+                showMessage("Only the host can control the timer.", true);
+                return;
+            }
+            if (currentGameState.timerRunning) {
+                // Stop timer
+                updateGameData({ timerRunning: false, timerTime: localTimeLeft });
+            } else {
+                // Start timer from 60 seconds (standard for Slapegories)
+                updateGameData({ timerRunning: true, timerTime: 60 }); 
+            }
+        };
+
+        const resetAndStopTimer = () => {
+            if (!isHost) {
+                showMessage("Only the host can reset the timer.", true);
+                return;
+            }
+            updateGameData({ timerRunning: false, timerTime: 60 });
+        };
+        
+        // --- CATEGORY GETTERS ---
+
+        const drawNewLetter = () => {
+            return getRandomElement(ALPHABET);
+        };
+
+        const getNewCategory = async () => {
+            const categorySource = document.querySelector('input[name="category-source"]:checked').value;
+            let newCategory = currentGameState.category;
+            
+            if (categorySource === 'ai') {
+                const difficulty = aiDifficultySelector.value;
+                newCategory = await generateAICategory(difficulty);
+            } 
+            else if (categorySource === 'custom') {
+                if (customCategoryData.length === 0) {
+                    showMessage("No shared custom categories! Add one or switch the source.");
+                    newCategory = "Error: No Categories";
+                } else {
+                    newCategory = getRandomElement(customCategoryData).name;
+                }
+            } else { // 'predefined'
+                newCategory = getRandomElement(PREDEFINED_CATEGORIES);
+            }
+            return newCategory;
+        };
+
+        // --- NEW CARD CONTROL HANDLERS (Write to Firestore + Optimistic Update) ---
+
+        const handleNewLetter = () => {
+            if (!isHost) { showMessage("Only the host can change game cards.", true); return; }
+            
+            const newLetter = drawNewLetter();
+            
+            // 1. Optimistic Update (Instant UI change for host)
+            letterCard.textContent = newLetter;
+
+            // 2. Write to Firestore
+            updateGameData({ letter: newLetter, timerRunning: false, timerTime: 60, category: currentGameState.category });
+            judgeResult.textContent = '';
+        };
+
+        const handleNewCategory = async () => {
+            if (!isHost) { showMessage("Only the host can change game cards.", true); return; }
+            changeCategoryBtn.disabled = true;
+            
+            // 1. Get new category
+            const newCategory = await getNewCategory(); 
+            
+            // 2. Optimistic Update (Instant UI change for host)
+            categoryCard.textContent = newCategory;
+            judgeResult.textContent = '';
+
+            // 3. Write to Firestore
+            updateGameData({ category: newCategory, timerRunning: false, timerTime: 60, letter: currentGameState.letter });
+            changeCategoryBtn.disabled = false;
+        };
+
+        const handleNewBoth = async () => {
+            if (!isHost) { showMessage("Only the host can change game cards.", true); return; }
+            changeBothBtn.disabled = true;
+            
+            // 1. Get new data
+            const newLetter = drawNewLetter();
+            const newCategory = await getNewCategory();
+            
+            // 2. Optimistic Update (Instant UI change for host)
+            letterCard.textContent = newLetter;
+            categoryCard.textContent = newCategory;
+            judgeResult.textContent = '';
+            
+            // 3. Write to Firestore
+            updateGameData({ letter: newLetter, category: newCategory, timerRunning: false, timerTime: 60 });
+            changeBothBtn.disabled = false;
+        };
+
+        // --- GEMINI LLM FUNCTIONS (Updated System Prompt for Diversity) ---
+        
+        const generateAICategory = async (difficulty) => {
+            // 1. Prepare UI
+            categoryCard.innerHTML = '<span class="spinner"></span> Generating...';
+            categoryCard.classList.remove('text-2xl', 'md:text-3xl');
+            categoryCard.classList.add('text-gray-400', 'text-xl');
+            
+            // 2. Build Prompt (UPDATED SYSTEM PROMPT FOR DIVERSITY)
+            const difficultyText = difficulty === 'Any' ? 'a random difficulty' : `the **${difficulty}** difficulty`;
+            const systemPrompt = "You are a Slapegories game master. Your only task is to generate a single, creative, challenging, and clear category for a Slapegories game based on the requested difficulty. For 'Easy' difficulty, generate common but interesting categories (e.g., 'Things found in a park' or 'US States'), explicitly avoiding overly simplistic topics like just 'Fruit' or 'Clothing'. For 'Hard' difficulty, generate highly specific or abstract categories. Your response MUST be ONLY the category name and nothing else. Do not include any introductory phrases, explanations, or quotes.";
+            
+            const userQuery = `Generate a single category for a Slapegories game with ${difficultyText}.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            let response = null;
+            let success = false;
+            let retryCount = 0;
+            const maxRetries = 3;
+            let delay = 1000;
+
+            while (!success && retryCount < maxRetries) {
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        success = true;
+                    } else if (response.status === 429) { 
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; 
+                        retryCount++;
+                    } else {
+                        throw new Error(`API Error: ${response.status}`);
+                    }
+                } catch (error) {
+                    retryCount++;
+                    if (retryCount < maxRetries) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2;
+                    } else {
+                        console.error("Gemini API call failed after multiple retries:", error);
+                        showMessage('Error generating AI Category: Failed to connect.');
+                        return "AI Error";
+                    }
+                }
+            }
+            
+            // 3. Process Result
+            try {
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Error: No category generated.';
+                return text.replace(/['"]/g, '');
+            } catch (e) {
+                console.error("Error parsing Gemini category response:", e);
+                showMessage('Error: Problem interpreting the AI\'s response.');
+                return "AI Parse Error";
+            } finally {
+                 // Reset UI font (onSnapshot will update content shortly after)
+                categoryCard.classList.add('text-2xl', 'md:text-3xl');
+                categoryCard.classList.remove('text-gray-400', 'text-xl');
+            }
+        };
+
+        // NEW FUNCTION: Suggest an answer based on the current letter and category
+        const suggestAnswerWithGemini = async () => {
+            const { letter, category } = currentGameState;
+            
+            if (letter === '?' || category.includes('Welcome')) {
+                judgeResult.textContent = 'Please get new cards before asking for a suggestion!';
+                return;
+            }
+            
+            // Prepare for API call
+            suggestAnswerBtn.disabled = true;
+            judgeAnswerBtn.disabled = true;
+            judgeResult.innerHTML = '<span class="spinner"></span> Thinking...';
+
+            const systemPrompt = `You are a creative Slapegories player. Your task is to provide a single, valid, and creative example answer for the given category and letter. Your response MUST be ONLY the answer and nothing else. Do not include any introductory phrases, explanations, or formatting.`;
+            
+            const userQuery = `Category: ${category}. Starting Letter: ${letter}.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            let response = null;
+            let success = false;
+            let retryCount = 0;
+            let delay = 1000; 
+            const maxRetries = 3; 
+
+            while (!success && retryCount < maxRetries) {
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        success = true;
+                    } else if (response.status === 429) { 
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; 
+                        retryCount++;
+                    } else {
+                        throw new Error(`API Error: ${response.status}`);
+                    }
+                } catch (error) {
+                    retryCount++;
+                    if (retryCount < maxRetries) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2;
+                    } else {
+                        console.error("Gemini API call failed after multiple retries:", error);
+                        judgeResult.innerHTML = '<span class="text-red-400">Error suggesting answer. Try again later.</span>';
+                        suggestAnswerBtn.disabled = false;
+                        judgeAnswerBtn.disabled = false;
+                        return;
+                    }
+                }
+            }
+            
+            suggestAnswerBtn.disabled = false;
+            judgeAnswerBtn.disabled = false;
+
+            try {
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Error: No answer generated.';
+                
+                judgeResult.innerHTML = `<span class="text-yellow-400">Suggestion:</span> <span class="text-white font-bold">${text}</span>`;
+                
+            } catch (e) {
+                console.error("Error parsing Gemini answer suggestion:", e);
+                judgeResult.innerHTML = '<span class="text-red-400">Error: Problem interpreting the suggestion.</span>';
+            }
+        };
+
+        const verifyAnswerWithGemini = async () => {
+            const answer = answerInput.value.trim();
+            const { letter, category } = currentGameState;
+            
+            if (letter === '?' || category.includes('Welcome')) {
+                judgeResult.textContent = 'Please get new cards before judging!';
+                return;
+            }
+            
+            if (!answer) {
+                judgeResult.textContent = 'Please type an answer to be judged.';
+                return;
+            }
+
+            // Check starting letter locally first (mandatory rule check)
+            if (answer.toUpperCase().charAt(0) !== letter) {
+                judgeResult.innerHTML = `<span class="text-red-400">INVALID:</span> Does not start with the letter **${letter}**.`;
+                return;
+            }
+
+            // Prepare for API call
+            judgeAnswerBtn.disabled = true;
+            suggestAnswerBtn.disabled = true;
+            judgeResult.innerHTML = '<span class="spinner"></span> Judging...';
+
+            const systemPrompt = "You are the Slapegories Game Judge. Your task is to verify if a user's proposed answer is plausible and relevant for the given category. The starting letter is already verified locally, so focus only on the category relevance. Your response MUST start with 'VALID:' or 'INVALID:', followed by a brief, single-sentence justification.";
+            
+            const userQuery = `Category: ${category}, Answer: ${answer}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                tools: [{ "google_search": {} }], // Use search grounding for up-to-date knowledge
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            let response = null;
+            let success = false;
+            let retryCount = 0;
+            let delay = 1000; 
+            const maxRetries = 3; 
+
+            while (!success && retryCount < maxRetries) {
+                try {
+                    response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        success = true;
+                    } else if (response.status === 429) { 
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; 
+                        retryCount++;
+                    } else {
+                        throw new Error(`API Error: ${response.status}`);
+                    }
+                } catch (error) {
+                    retryCount++;
+                    if (retryCount < maxRetries) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2;
+                    } else {
+                        console.error("Gemini API call failed after multiple retries:", error);
+                        judgeResult.innerHTML = '<span class="text-red-400">Error: Failed to connect to judge. Try again later.</span>';
+                        judgeAnswerBtn.disabled = false;
+                        suggestAnswerBtn.disabled = false;
+                        return;
+                    }
+                }
+            }
+            
+            judgeAnswerBtn.disabled = false;
+            suggestAnswerBtn.disabled = false;
+
+
+            try {
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text || 'Error: No response from judge.';
+                
+                if (text.toUpperCase().startsWith('VALID:')) {
+                    const justification = text.substring(6).trim();
+                    judgeResult.innerHTML = `<span class="text-green-400">VALID!</span> ${justification}`;
+                } else if (text.toUpperCase().startsWith('INVALID:')) {
+                    const justification = text.substring(8).trim();
+                    judgeResult.innerHTML = `<span class="text-red-400">INVALID.</span> ${justification}`;
+                } else {
+                    // Fallback if the LLM doesn't follow the exact format
+                    judgeResult.innerHTML = `<span class="text-yellow-400">Judge's Ruling:</span> ${text}`;
+                }
+                
+            } catch (e) {
+                console.error("Error parsing Gemini response:", e);
+                judgeResult.innerHTML = '<span class="text-red-400">Error: Problem interpreting the judge\'s ruling.</span>';
+            }
+        };
+
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initFirebase();
+
+            changeLetterBtn.addEventListener('click', handleNewLetter);
+            changeCategoryBtn.addEventListener('click', handleNewCategory);
+            changeBothBtn.addEventListener('click', handleNewBoth);
+
+            startTimerBtn.addEventListener('click', toggleTimer);
+            resetTimerBtn.addEventListener('click', resetAndStopTimer);
+            
+            // NEW Listener for Suggest Answer
+            suggestAnswerBtn.addEventListener('click', suggestAnswerWithGemini);
+            
+            judgeAnswerBtn.addEventListener('click', verifyAnswerWithGemini);
+            answerInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    verifyAnswerWithGemini();
+                }
+            });
+
+            // Scoreboard Listeners
+            updatePlayersBtn.addEventListener('click', updatePlayerNames);
+            scoreboardGrid.addEventListener('click', handleScoreIncrement);
+            resetScoresBtn.addEventListener('click', resetScores);
+            
+            // NEW: Game Mode Listeners
+            gameModeRadios.forEach(radio => {
+                radio.addEventListener('change', handleGameModeChange);
+            });
+            joinGameBtn.addEventListener('click', joinGame);
+
+
+            // Category Source Listeners
+            categorySourceRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const source = e.target.value;
+                    myCategoriesSection.classList.toggle('hidden', source !== 'custom');
+                    aiDifficultySection.classList.toggle('hidden', source !== 'ai');
+                    clearMessage();
+                });
+            });
+
+            // Custom Category Management Listeners
+            addCategoryBtn.addEventListener('click', () => {
+                const category = newCategoryInput.value.trim();
+                if (category) {
+                    addCustomCategory(category);
+                    newCategoryInput.value = '';
+                } else {
+                    showMessage("Category can't be empty.");
+                }
+                newCategoryInput.focus();
+            });
+
+            myCategoryList.addEventListener('click', (e) => {
+                if (e.target.classList.contains('delete-btn')) {
+                    const id = e.target.dataset.id;
+                    deleteCustomCategory(id);
+                }
+            });
+            
+            // Initial UI Setup for Category Sections
+            const initialSource = document.querySelector('input[name="category-source"]:checked').value;
+            myCategoriesSection.classList.toggle('hidden', initialSource !== 'custom');
+            aiDifficultySection.classList.toggle('hidden', initialSource !== 'ai');
+        });
+    </script>
+</body>
+</html>
