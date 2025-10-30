@@ -398,11 +398,6 @@
 
         const initSupabase = async () => {
             // Check if user has filled in the config
-            if (!GEMINI_API_KEY || GEMINI_API_KEY === "AIzaSyBlisAKuJfhZRR9ag1o5EboDfMPD3B42qk") {
-                showMessage("FATAL ERROR: Gemini API Key missing. Please edit the HTML file.");
-                return;
-            }
-            
             try {
                 supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             } catch (error) {
