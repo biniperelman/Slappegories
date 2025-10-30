@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slapegories Multiplayer Game</title>
+    <title>Slapegories Multiplayer Game (Supabase)</title>
+    <!-- Load Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Supabase client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         /* Custom font */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900;bold&display=swap');
@@ -39,14 +42,15 @@
             Slapegories LIVE
         </h1>
         <p class="text-center text-gray-300 mb-6 text-sm">
-            Real-time multiplayer game. Changes update instantly on all devices!
+            Powered by Supabase Realtime
         </p>
 
+        <!-- Message Area for Errors -->
         <div id="message-area" class="text-red-400 text-center h-6 mb-4 font-semibold"></div>
 
+        <!-- Game Setup & Joining -->
         <div class="bg-gray-700 p-6 rounded-xl mb-6 border border-gray-600">
             <h2 class="text-2xl font-bold mb-4 text-center text-purple-300">Game Session Setup</h2>
-
             <div class="flex flex-col md:flex-row gap-4 mb-4">
                 <div class="flex-1">
                     <label for="option-create" class="flex items-center space-x-3 p-3 bg-gray-600 rounded-lg cursor-pointer hover:bg-gray-500 transition-colors">
@@ -54,7 +58,6 @@
                         <span class="font-semibold text-lg">Create New Game (Host)</span>
                     </label>
                 </div>
-                
                 <div class="flex-1">
                     <label for="option-join" class="flex items-center space-x-3 p-3 bg-gray-600 rounded-lg cursor-pointer hover:bg-gray-500 transition-colors">
                         <input type="radio" name="game-mode" id="option-join" value="join" class="h-5 w-5">
@@ -62,7 +65,6 @@
                     </label>
                 </div>
             </div>
-
             <div id="join-input-section" class="flex gap-2 hidden">
                 <input type="text" id="join-game-id-input" placeholder="Paste Game ID from host..." class="bg-gray-800 text-white border border-gray-600 rounded-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500">
                 <button id="join-game-btn" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 px-5 rounded-lg transition-all duration-200 shadow-md disabled:opacity-50">
@@ -71,6 +73,7 @@
             </div>
         </div>
 
+        <!-- Game ID Display -->
         <div class="bg-purple-900/50 p-3 rounded-lg text-center mb-6 border border-purple-700">
             <h2 class="text-xl font-bold text-purple-300">Current Game ID:</h2>
             <p id="game-id-display" class="font-mono text-2xl font-bold text-yellow-300 break-all">
@@ -81,7 +84,7 @@
             </p>
         </div>
 
-
+        <!-- Game Cards -->
         <div class="flex flex-col md:flex-row gap-6 mb-6">
             <div class="bg-white text-gray-900 rounded-xl p-6 w-full md:w-1/3 h-48 flex items-center justify-center text-center shadow-lg transition-all duration-300 transform">
                 <span id="letter-card" class="text-8xl md:text-9xl font-extrabold text-purple-600">?</span>
@@ -91,6 +94,7 @@
             </div>
         </div>
 
+        <!-- Main Game Buttons -->
         <div class="flex flex-col sm:flex-row gap-3 mb-6">
             <button id="change-letter-btn" class="w-full sm:w-1/3 bg-purple-500 hover:bg-purple-600 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-400" disabled>
                 New Letter
@@ -103,21 +107,20 @@
             </button>
         </div>
 
-
+        <!-- Scoreboard Section -->
         <div class="bg-gray-700 p-6 rounded-lg mb-6">
             <h2 class="text-2xl font-bold mb-4 text-center text-green-400">Scoreboard (Real-time)</h2>
-            
             <div id="player-inputs" class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                </div>
-
+                <!-- Player name inputs will be generated here by JavaScript -->
+            </div>
             <button id="update-players-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg transition-all duration-200 shadow-md">
                 Update Player Names
             </button>
-
             <div id="score-display-container" class="mt-4">
                 <h3 class="text-xl font-semibold mb-3 text-center">Round Scores</h3>
                 <div id="scoreboard-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    </div>
+                    <!-- Score buttons will be generated here by JavaScript -->
+                </div>
                 <div class="mt-4 text-center">
                     <button id="reset-scores-btn" class="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold py-1 px-3 rounded-lg transition-all duration-200">
                         Reset All Scores
@@ -126,14 +129,13 @@
             </div>
         </div>
 
-
+        <!-- Answer Input & Judge Feature -->
         <div class="bg-gray-700 p-6 rounded-lg mb-6">
             <h2 class="text-2xl font-bold mb-4 text-center text-indigo-300">
                 ✨ Judge My Answer (Gemini AI)
             </h2>
             <div class="flex flex-col gap-3 mb-4">
                 <input type="text" id="answer-input" placeholder="Type your answer here..." class="bg-gray-800 text-white border border-gray-600 rounded-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                
                 <div class="flex flex-col sm:flex-row gap-3">
                     <button id="suggest-answer-btn" class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-5 rounded-lg transition-all duration-200 shadow-md whitespace-nowrap">
                         Suggest Answer
@@ -144,9 +146,11 @@
                 </div>
             </div>
             <div id="judge-result" class="text-center min-h-6 mt-3 text-lg font-semibold text-gray-300">
-                </div>
+                <!-- LLM result displays here -->
+            </div>
         </div>
         
+        <!-- Timer -->
         <div class="bg-gray-700 p-4 rounded-lg flex items-center justify-between gap-4 mb-8">
             <div id="timer-display" class="text-5xl font-mono text-yellow-400 font-bold">
                 01:00
@@ -157,9 +161,9 @@
             </div>
         </div>
 
+        <!-- Category Settings -->
         <div class="bg-gray-700 p-6 rounded-lg">
             <h2 class="text-2xl font-bold mb-4 text-center">Category Settings</h2>
-            
             <h3 class="text-xl font-semibold mb-3 text-gray-300">Category Source:</h3>
             <div class="flex flex-wrap justify-center gap-4 mb-6 text-sm sm:text-base">
                 <label class="flex items-center space-x-2">
@@ -175,7 +179,6 @@
                     <span>AI Generated</span>
                 </label>
             </div>
-
             <div id="ai-difficulty-section" class="hidden bg-gray-600 p-4 rounded-lg mb-6">
                 <h3 class="text-xl font-semibold mb-2">Select Difficulty:</h3>
                 <select id="ai-difficulty" class="w-full bg-gray-800 text-white p-2 rounded-lg border border-gray-500 focus:ring-purple-500 focus:border-purple-500">
@@ -186,35 +189,42 @@
                     <option value="Very Hard">Very Hard</option>
                 </select>
             </div>
-
-
             <div id="my-categories-section" class="hidden">
                 <h3 class="text-xl font-semibold mb-3">Add Shared Categories</h3>
                 <div class="flex mb-4">
                     <input type="text" id="new-category-input" placeholder="e.g., 'Types of Dogs'" class="bg-gray-800 text-white border border-gray-600 rounded-l-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-purple-500">
                     <button id="add-category-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-5 rounded-r-lg transition-all duration-200">Add</button>
                 </div>
-
                 <h3 class="text-xl font-semibold mb-3">Shared Category List (Cloud Saved)</h3>
                 <div id="my-category-list-container" class="bg-gray-800 p-4 rounded-lg max-h-48 overflow-y-auto">
                     <ul id="my-category-list" class="space-y-2">
-                        </ul>
+                        <!-- User categories will be added here -->
+                    </ul>
                     <p id="empty-list-msg" class="text-gray-400 text-center">Your list is empty. Add some categories above!</p>
                 </div>
             </div>
         </div>
     </main>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, getDocs, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // Setting up Firebase and Firestore instances globally within the script scope
-        let app, db, auth, userId, gameDocRef, customCategoriesCollectionRef;
-        let unsubscribeGameState = null;
-        let unsubscribeCategories = null;
+    <!-- Main Game Script -->
+    <script>
+        // --- START: USER CONFIGURATION (Required for Live Website) ---
+
+        // STEP 1: Paste your Supabase project URL and anon key here.
+        // Go to Supabase dashboard > Project Settings > API
+        const SUPABASE_URL = "https://qxsczgqxtxrkirdwyjmi.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4c2N6Z3F4dHhya2lyZHd5am1pIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTgzNzQwNiwiZXhwIjoyMDc3NDEzNDA2fQ.7g2qk2pBhWqS3kSM7mJH8JeYI5JCPafz9pq8Y1QznHw";
+
+        // STEP 2: Paste your Gemini API key here.
+        // Go to Google AI Studio (aistudio.google.com) > Get API key
+        const GEMINI_API_KEY = "AIzaSyBlisAKuJfhZRR9ag1o5EboDfMPD3B42qk";
+
+        // --- END: USER CONFIGURATION ---
+
+
+        // Setting up Supabase and other globals
+        let supabaseClient, userId;
+        let activeGameChannel, categoriesChannel;
         let activeGameId = null; 
         let isHost = true; 
         
@@ -239,8 +249,7 @@
         };
 
         // --- LLM API Setup ---
-        const apiKey = "";
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
 
         // --- DOM Elements ---
         const letterCard = document.getElementById('letter-card');
@@ -248,13 +257,11 @@
         const gameIdDisplay = document.getElementById('game-id-display');
         const gameModeStatus = document.getElementById('game-mode-status'); 
         
-        // Game Mode Elements
         const gameModeRadios = document.querySelectorAll('input[name="game-mode"]');
         const joinInputSection = document.getElementById('join-input-section');
         const joinGameIdInput = document.getElementById('join-game-id-input');
         const joinGameBtn = document.getElementById('join-game-btn');
         
-        // Card Control Buttons
         const changeLetterBtn = document.getElementById('change-letter-btn');
         const changeCategoryBtn = document.getElementById('change-category-btn');
         const changeBothBtn = document.getElementById('change-both-btn');
@@ -265,19 +272,16 @@
         
         const messageArea = document.getElementById('message-area');
 
-        // Judge Feature Elements
         const answerInput = document.getElementById('answer-input');
         const suggestAnswerBtn = document.getElementById('suggest-answer-btn'); 
         const judgeAnswerBtn = document.getElementById('judge-answer-btn');
         const judgeResult = document.getElementById('judge-result');
         
-        // Scoreboard Elements
         const playerInputsContainer = document.getElementById('player-inputs');
         const updatePlayersBtn = document.getElementById('update-players-btn');
         const scoreboardGrid = document.getElementById('scoreboard-grid');
         const resetScoresBtn = document.getElementById('reset-scores-btn');
 
-        // Category Settings Elements
         const categorySourceRadios = document.querySelectorAll('input[name="category-source"]');
         const aiDifficultySelector = document.getElementById('ai-difficulty');
         const aiDifficultySection = document.getElementById('ai-difficulty-section');
@@ -287,7 +291,7 @@
         const myCategoryList = document.getElementById('my-category-list');
         const emptyListMsg = document.getElementById('empty-list-msg');
         
-        // --- Game State (Local Mirror of Firestore) ---
+        // --- Game State (Local Mirror of Database) ---
         let currentGameState = { ...DEFAULT_GAME_STATE };
         let customCategoryData = []; // Array of { id, name } objects
 
@@ -304,25 +308,22 @@
         };
         const clearMessage = () => { messageArea.textContent = ''; };
         const setControlState = (isDisabled) => {
-            // Only the host should control game flow (letter/category/timer/reset)
             const controlButtons = [changeLetterBtn, changeCategoryBtn, changeBothBtn, startTimerBtn, resetTimerBtn];
             controlButtons.forEach(btn => btn.disabled = isDisabled);
-            
-            // Player and Score changes are allowed for all participants
             [updatePlayersBtn, resetScoresBtn].forEach(btn => btn.disabled = false); 
         };
         const enableGameControls = () => setControlState(false);
         const disableGameControls = () => setControlState(true);
         
-        // --- Game ID Switcher ---
+        // --- Game ID Switcher (Supabase Channel Management) ---
 
-        const setGameSessionId = (newId, isNewHost = false) => {
-            if (!db) return;
+        const setGameSessionId = async (newId, isNewHost = false) => {
+            if (!supabaseClient) return;
             
-            // 1. Unsubscribe from old session if exists
-            if (unsubscribeGameState) {
-                unsubscribeGameState(); 
-                unsubscribeGameState = null;
+            // 1. Unsubscribe from old session channel if exists
+            if (activeGameChannel) {
+                await supabaseClient.removeChannel(activeGameChannel);
+                activeGameChannel = null;
             }
             
             // 2. Set new state
@@ -335,17 +336,13 @@
                 ? 'You are currently Hosting this game.' 
                 : 'You are currently Joined to this game.';
             
-            // 4. Update Document Reference and Listener
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            gameDocRef = doc(db, `/artifacts/${appId}/public/data/game_sessions`, activeGameId);
-            
             if (isHost) {
                 enableGameControls();
             } else {
-                // If joining, disable controls that affect the game state
                 disableGameControls();
             }
             
+            // 4. Listen to the new game state
             listenToGameState();
             
             showMessage(isHost ? `New game session created/reloaded with ID: ${activeGameId}` : `Successfully joined game ID: ${activeGameId}`, false);
@@ -362,12 +359,14 @@
             showMessage("Checking game existence...", false);
 
             try {
-                // Check if the game session document exists
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const tempDocRef = doc(db, `/artifacts/${appId}/public/data/game_sessions`, joinId);
-                const docSnap = await getDoc(tempDocRef);
+                // Check if the game session row exists
+                const { data, error } = await supabaseClient
+                    .from('game_sessions')
+                    .select('id')
+                    .eq('id', joinId)
+                    .single();
 
-                if (docSnap.exists()) {
+                if (data && !error) {
                     setGameSessionId(joinId, false); // Join mode
                     joinGameIdInput.value = ''; // Clear input on success
                 } else {
@@ -387,7 +386,6 @@
             clearMessage();
 
             if (mode === 'create') {
-                // Switch back to hosting using the user's own ID
                 if (userId) {
                     setGameSessionId(userId, true);
                 } else {
@@ -396,182 +394,263 @@
             }
         };
 
-        // --- FIREBASE CORE ---
+        // --- SUPABASE CORE ---
 
-        const initFirebase = async () => {
-            // Retrieve global variables
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-            if (!firebaseConfig || !firebaseConfig.projectId) {
-                showMessage("FATAL ERROR: Firebase configuration missing.");
+        const initSupabase = async () => {
+            // Check if user has filled in the config
+            if (!SUPABASE_URL || SUPABASE_URL === "PASTE_YOUR_SUPABASE_URL_HERE") {
+                showMessage("FATAL ERROR: Supabase URL missing. Please edit the HTML file.");
+                return;
+            }
+            if (!SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === "PASTE_YOUR_SUPABASE_ANON_KEY_HERE") {
+                showMessage("FATAL ERROR: Supabase Anon Key missing. Please edit the HTML file.");
+                return;
+            }
+            if (!GEMINI_API_KEY || GEMINI_API_KEY === "PASTE_YOUR_GEMINI_API_KEY_HERE") {
+                showMessage("FATAL ERROR: Gemini API Key missing. Please edit the HTML file.");
                 return;
             }
             
-            setLogLevel('Debug');
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
+            try {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } catch (error) {
+                console.error("Supabase client creation error:", error);
+                showMessage("FATAL ERROR: Could not initialize Supabase.");
+                return;
+            }
             
             try {
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                // On a public website, we ALWAYS sign in anonymously.
+                const { data: { session }, error } = await supabaseClient.auth.signInAnonymously();
                 
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        
-                        // Set initial game session to the user's own ID (Host mode)
-                        setGameSessionId(userId, true); 
+                if (error) {
+                    throw error;
+                }
 
-                        // Define custom categories collection (always global)
-                        customCategoriesCollectionRef = collection(db, `/artifacts/${appId}/public/data/custom_categories`);
-                        
-                        // Start listening to categories
-                        listenToCustomCategories();
-                        
-                        // Render player inputs based on the initial state
-                        renderPlayerInputs(currentGameState.players);
-                        
-                    } else {
-                        userId = crypto.randomUUID(); // Fallback for unauthenticated
-                        gameIdDisplay.textContent = 'Auth Failed';
-                        disableGameControls();
-                        gameModeStatus.textContent = 'Authentication failed. Please check connection.';
+                if (session) {
+                    userId = session.user.id;
+                    
+                    // Set initial game session to the user's own ID (Host mode)
+                    setGameSessionId(userId, true); 
+
+                    // Start listening to categories (global listener)
+                    listenToCustomCategories();
+                    
+                    // Render player inputs based on the initial state
+                    renderPlayerInputs(currentGameState.players);
+                    
+                } else {
+                    throw new Error("No session returned from anonymous sign-in.");
+                }
+
+                // Listen for any auth changes
+                supabaseClient.auth.onAuthStateChange((_event, session) => {
+                    if (session) {
+                        userId = session.user.id;
                     }
                 });
 
             } catch (error) {
-                console.error("Firebase Auth Error:", error);
+                console.error("Supabase Auth Error:", error);
                 showMessage("Authentication failed. Cannot start multiplayer game.");
                 userId = crypto.randomUUID();
             }
         };
 
-        // --- FIRESTORE LISTENERS & WRITERS ---
+        // --- SUPABASE LISTENERS & WRITERS ---
 
-        const listenToGameState = () => {
-            if (!gameDocRef) return; // Must have an active game ID set
+        const listenToGameState = async () => {
+            if (!activeGameId) return; 
 
-            if (unsubscribeGameState) unsubscribeGameState(); 
-            
-            unsubscribeGameState = onSnapshot(gameDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    currentGameState = docSnap.data();
+            // 1. Initial Fetch
+            try {
+                const { data, error } = await supabaseClient
+                    .from('game_sessions')
+                    .select('state')
+                    .eq('id', activeGameId)
+                    .single();
+
+                if (data) {
+                    currentGameState = data.state;
                     updateGameUI(currentGameState);
-                } else {
-                    // Only the host should attempt to create a new document if it doesn't exist
-                    if (isHost) {
-                         // Initialize new game state in Firestore
-                        setDoc(gameDocRef, DEFAULT_GAME_STATE)
-                            .then(() => {
-                                currentGameState = DEFAULT_GAME_STATE;
-                                updateGameUI(currentGameState);
-                                showMessage("New multiplayer game session initialized.", false);
-                            })
-                            .catch(err => console.error("Error creating game doc:", err));
+                } else if (isHost) {
+                    // Doesn't exist, and we are host. Create it.
+                    const { error: insertError } = await supabaseClient
+                        .from('game_sessions')
+                        .insert({ id: activeGameId, state: DEFAULT_GAME_STATE });
+                    
+                    if (insertError) {
+                        console.error("Error creating game doc:", insertError);
+                        showMessage("Error: Check Supabase RLS policies (Step 4).", true);
                     } else {
-                        // A viewer joined a game that doesn't exist anymore.
-                        showMessage("Error: The host's game session has been deleted or expired.", true);
-                        disableGameControls(); 
+                        currentGameState = DEFAULT_GAME_STATE;
+                        updateGameUI(currentGameState);
+                        showMessage("New multiplayer game session initialized.", false);
                     }
+                } else {
+                    // Doesn't exist, and we are a client. Host's game is gone.
+                    showMessage("Error: The host's game session has been deleted or expired.", true);
+                    disableGameControls();
                 }
-            }, (error) => {
-                console.error("Error listening to game state:", error);
-                showMessage("Lost connection to game session. Check console for details.");
-            });
+            } catch (error) {
+                 console.error("Error fetching game state:", error);
+                 if (isHost) showMessage("Error: Check Supabase RLS policies (Step 4).", true);
+            }
+
+            // 2. Realtime Subscription
+            activeGameChannel = supabaseClient
+                .channel(`game-session-${activeGameId}`) // Unique channel per game
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*', // INSERT/UPDATE
+                        schema: 'public',
+                        table: 'game_sessions',
+                        filter: `id=eq.${activeGameId}`
+                    },
+                    (payload) => {
+                        if (payload.new) {
+                            currentGameState = payload.new.state;
+                            updateGameUI(currentGameState);
+                        }
+                    }
+                )
+                .subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        console.log(`Subscribed to game session: ${activeGameId}`);
+                    } else if (status === 'CHANNEL_ERROR') {
+                         console.error('Supabase channel error. Check RLS policies.');
+                         showMessage('Realtime connection failed. Check Supabase RLS.', true);
+                    }
+                });
         };
 
-        const updateGameData = async (data) => {
-            if (!gameDocRef) return;
+        const updateGameData = async (newData) => {
+            if (!activeGameId) return;
+            
             try {
-                // If not host, prevent game-changing updates (letter/category/timer)
+                // If not host, prevent game-changing updates
                 if (!isHost) {
-                    if (data.letter || data.category || data.timerRunning !== undefined || data.timerTime !== undefined) {
+                    if (newData.letter || newData.category || newData.timerRunning !== undefined || newData.timerTime !== undefined) {
                         showMessage("You must be the host to change the letter, category, or timer.", true);
-                        // Only allow player/score updates for non-hosts
                         const allowedUpdates = {};
-                        if (data.players) allowedUpdates.players = data.players;
+                        if (newData.players) allowedUpdates.players = newData.players;
+                        
                         if (Object.keys(allowedUpdates).length > 0) {
-                            await setDoc(gameDocRef, { ...allowedUpdates, lastUpdated: Date.now() }, { merge: true });
+                            const playerUpdateState = { ...currentGameState, ...allowedUpdates, lastUpdated: Date.now() };
+                            await supabaseClient.from('game_sessions').upsert({ id: activeGameId, state: playerUpdateState });
                         }
                         return;
                     }
                 }
 
-                await setDoc(gameDocRef, { ...data, lastUpdated: Date.now() }, { merge: true });
+                // Merge new data into the current local state
+                const newState = { ...currentGameState, ...newData, lastUpdated: Date.now() };
+
+                // Upsert the entire new state object
+                const { error } = await supabaseClient
+                    .from('game_sessions')
+                    .upsert({ id: activeGameId, state: newState });
+                    
+                if (error) {
+                    console.error("Error updating game data:", error);
+                    showMessage("Failed to update game state. Check Supabase RLS.");
+                }
             } catch (error) {
-                console.error("Error updating game data:", error);
-                showMessage("Failed to update game state. Check connection.");
+                console.error("Error in updateGameData:", error);
+                showMessage("Failed to update game state.");
             }
         };
         
-        // --- UI UPDATERS (Called by onSnapshot) ---
+        // --- UI UPDATERS (Called by Realtime) ---
 
         const updateGameUI = (state) => {
             letterCard.textContent = state.letter || '?';
             categoryCard.textContent = state.category || '...';
             
-            // Timer sync (simple, non-perfect sync for this scope)
             if (state.timerRunning) {
                 startLocalTimer(state.timerTime);
             } else {
                 resetLocalTimer(state.timerTime);
             }
-
-            // Scoreboard UI update
             renderScoreboard(state.players);
         };
         
         // --- CATEGORY PERSISTENCE (Shared Cloud List) ---
 
-        const listenToCustomCategories = () => {
-            if (!customCategoriesCollectionRef) return;
-
-            if (unsubscribeCategories) unsubscribeCategories(); 
-            
-            unsubscribeCategories = onSnapshot(customCategoriesCollectionRef, (snapshot) => {
-                customCategoryData = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    name: doc.data().name
-                }));
+        const fetchCustomCategories = async () => {
+            if (!supabaseClient) return;
+            const { data, error } = await supabaseClient
+                .from('custom_categories')
+                .select('id, name, creator_id');
+                
+            if (error) {
+                console.error("Error fetching categories:", error);
+                showMessage("Error loading custom categories. Check Supabase RLS.");
+            } else {
+                customCategoryData = data || [];
                 updateCategoryListUI();
-            }, (error) => {
-                console.error("Error listening to categories:", error);
-                showMessage("Error loading custom categories.");
-            });
+            }
+        };
+
+        const listenToCustomCategories = () => {
+            // 1. Initial Fetch
+            fetchCustomCategories(); 
+            
+            // 2. Realtime Subscription (only subscribe once)
+            if (categoriesChannel) {
+                return; 
+            }
+            categoriesChannel = supabaseClient
+                .channel('custom-categories-channel')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'custom_categories'
+                    },
+                    (payload) => {
+                        // Simple: just refetch the whole list.
+                        fetchCustomCategories();
+                    }
+                )
+                .subscribe((status) => {
+                     if (status === 'SUBSCRIBED') {
+                        console.log(`Subscribed to custom categories.`);
+                    } else if (status === 'CHANNEL_ERROR') {
+                         console.error('Supabase categories channel error. Check RLS policies.');
+                         showMessage('Realtime failed for categories. Check Supabase RLS.', true);
+                    }
+                });
         };
 
         const addCustomCategory = async (categoryName) => {
             if (!categoryName) return;
-
-            // Check locally first (using current state)
             if (customCategoryData.some(c => c.name.toLowerCase() === categoryName.toLowerCase())) {
                 showMessage("That category is already in the shared list.");
                 return;
             }
 
             try {
-                // Add the category to Firestore
-                await setDoc(doc(customCategoriesCollectionRef), {
-                    name: categoryName,
-                    creatorId: userId,
-                    createdAt: Date.now()
-                });
+                const { error } = await supabaseClient
+                    .from('custom_categories')
+                    .insert({ name: categoryName, creator_id: userId });
+                if (error) throw error;
                 clearMessage();
             } catch (error) {
                 console.error("Error adding category:", error);
-                showMessage("Failed to add category to the shared list.");
+                showMessage("Failed to add category. Check Supabase RLS.");
             }
         };
 
         const deleteCustomCategory = async (id) => {
             try {
-                await deleteDoc(doc(customCategoriesCollectionRef, id));
+                const { error } = await supabaseClient
+                    .from('custom_categories')
+                    .delete()
+                    .eq('id', id);
+                if (error) throw error;
             } catch (error) {
                 console.error("Error deleting category:", error);
                 showMessage("Failed to delete category.");
@@ -586,8 +665,7 @@
                 customCategoryData.forEach((category) => {
                     const li = document.createElement('li');
                     li.className = 'flex justify-between items-center bg-gray-600 p-2 rounded-lg';
-                    // Only allow deletion if the current user created it (optional for simplicity)
-                    const isCreator = category.creatorId === userId; 
+                    const isCreator = category.creator_id === userId; 
                     li.innerHTML = `
                         <span class="text-gray-100">${category.name}</span>
                         ${isCreator ? `<button data-id="${category.id}" class="delete-btn bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-all duration-200">
@@ -635,7 +713,6 @@
         const renderScoreboard = (players) => {
             scoreboardGrid.innerHTML = '';
             if (players.length === 0) {
-                 // Initialize players if none exist
                 if (isHost) {
                     const initialPlayers = Array(MAX_PLAYERS).fill(null).map((_, i) => ({
                         id: i + 1,
@@ -644,7 +721,7 @@
                     }));
                     updateGameData({ players: initialPlayers });
                 }
-                return; // Wait for the updateGameData to populate players
+                return;
             }
             
             players.forEach(player => {
@@ -666,7 +743,7 @@
 
         const handleScoreIncrement = (e) => {
             if (e.target.classList.contains('score-increment-btn')) {
-                const action = e.target.dataset.action; // Get 'plus' or 'minus'
+                const action = e.target.dataset.action; 
                 const playerId = parseInt(e.target.dataset.id, 10);
                 const players = [...currentGameState.players];
                 const playerIndex = players.findIndex(p => p.id === playerId);
@@ -676,7 +753,6 @@
                         players[playerIndex].score++;
                         showMessage(`Point awarded to ${players[playerIndex].name}!`, false);
                     } else if (action === 'minus') {
-                        // Ensure score doesn't go below 0
                         players[playerIndex].score = Math.max(0, players[playerIndex].score - 1);
                         showMessage(`Point subtracted from ${players[playerIndex].name}.`, true); 
                     }
@@ -699,7 +775,6 @@
         const startLocalTimer = (remoteTime) => {
             if (localTimerInterval) clearInterval(localTimerInterval);
             localTimeLeft = remoteTime;
-            
             startTimerBtn.textContent = 'Pause';
             
             localTimerInterval = setInterval(() => {
@@ -710,7 +785,6 @@
                     clearInterval(localTimerInterval);
                     timerDisplay.classList.add('text-red-500');
                     timerDisplay.classList.remove('text-yellow-400');
-                    // Only the host should attempt to stop it in Firestore
                     if (isHost && currentGameState.timerRunning) {
                         updateGameData({ timerRunning: false, timerTime: 0 });
                     }
@@ -736,10 +810,8 @@
                 return;
             }
             if (currentGameState.timerRunning) {
-                // Stop timer
                 updateGameData({ timerRunning: false, timerTime: localTimeLeft });
             } else {
-                // Start timer from 60 seconds (standard for Slapegories)
                 updateGameData({ timerRunning: true, timerTime: 60 }); 
             }
         };
@@ -779,17 +851,12 @@
             return newCategory;
         };
 
-        // --- NEW CARD CONTROL HANDLERS (Write to Firestore + Optimistic Update) ---
+        // --- NEW CARD CONTROL HANDLERS (Write to Supabase) ---
 
         const handleNewLetter = () => {
             if (!isHost) { showMessage("Only the host can change game cards.", true); return; }
-            
             const newLetter = drawNewLetter();
-            
-            // 1. Optimistic Update (Instant UI change for host)
-            letterCard.textContent = newLetter;
-
-            // 2. Write to Firestore
+            letterCard.textContent = newLetter; // Optimistic update
             updateGameData({ letter: newLetter, timerRunning: false, timerTime: 60, category: currentGameState.category });
             judgeResult.textContent = '';
         };
@@ -797,15 +864,9 @@
         const handleNewCategory = async () => {
             if (!isHost) { showMessage("Only the host can change game cards.", true); return; }
             changeCategoryBtn.disabled = true;
-            
-            // 1. Get new category
             const newCategory = await getNewCategory(); 
-            
-            // 2. Optimistic Update (Instant UI change for host)
-            categoryCard.textContent = newCategory;
+            categoryCard.textContent = newCategory; // Optimistic update
             judgeResult.textContent = '';
-
-            // 3. Write to Firestore
             updateGameData({ category: newCategory, timerRunning: false, timerTime: 60, letter: currentGameState.letter });
             changeCategoryBtn.disabled = false;
         };
@@ -813,33 +874,24 @@
         const handleNewBoth = async () => {
             if (!isHost) { showMessage("Only the host can change game cards.", true); return; }
             changeBothBtn.disabled = true;
-            
-            // 1. Get new data
             const newLetter = drawNewLetter();
             const newCategory = await getNewCategory();
-            
-            // 2. Optimistic Update (Instant UI change for host)
-            letterCard.textContent = newLetter;
-            categoryCard.textContent = newCategory;
+            letterCard.textContent = newLetter; // Optimistic update
+            categoryCard.textContent = newCategory; // Optimistic update
             judgeResult.textContent = '';
-            
-            // 3. Write to Firestore
             updateGameData({ letter: newLetter, category: newCategory, timerRunning: false, timerTime: 60 });
             changeBothBtn.disabled = false;
         };
 
-        // --- GEMINI LLM FUNCTIONS (Updated System Prompt for Diversity) ---
+        // --- GEMINI LLM FUNCTIONS (Unchanged, use GEMINI_API_KEY) ---
         
         const generateAICategory = async (difficulty) => {
-            // 1. Prepare UI
             categoryCard.innerHTML = '<span class="spinner"></span> Generating...';
             categoryCard.classList.remove('text-2xl', 'md:text-3xl');
             categoryCard.classList.add('text-gray-400', 'text-xl');
             
-            // 2. Build Prompt (UPDATED SYSTEM PROMPT FOR DIVERSITY)
             const difficultyText = difficulty === 'Any' ? 'a random difficulty' : `the **${difficulty}** difficulty`;
             const systemPrompt = "You are a Slapegories game master. Your only task is to generate a single, creative, challenging, and clear category for a Slapegories game based on the requested difficulty. For 'Easy' difficulty, generate common but interesting categories (e.g., 'Things found in a park' or 'US States'), explicitly avoiding overly simplistic topics like just 'Fruit' or 'Clothing'. For 'Hard' difficulty, generate highly specific or abstract categories. Your response MUST be ONLY the category name and nothing else. Do not include any introductory phrases, explanations, or quotes.";
-            
             const userQuery = `Generate a single category for a Slapegories game with ${difficultyText}.`;
 
             const payload = {
@@ -847,11 +899,8 @@
                 systemInstruction: { parts: [{ text: systemPrompt }] },
             };
 
-            let response = null;
-            let success = false;
-            let retryCount = 0;
+            let response = null, success = false, retryCount = 0, delay = 1000;
             const maxRetries = 3;
-            let delay = 1000;
 
             while (!success && retryCount < maxRetries) {
                 try {
@@ -860,61 +909,49 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-
-                    if (response.ok) {
-                        success = true;
-                    } else if (response.status === 429) { 
+                    if (response.ok) { success = true; } 
+                    else if (response.status === 429) { 
                         await new Promise(resolve => setTimeout(resolve, delay));
-                        delay *= 2; 
-                        retryCount++;
-                    } else {
-                        throw new Error(`API Error: ${response.status}`);
-                    }
+                        delay *= 2; retryCount++;
+                    } else { throw new Error(`API Error: ${response.status}`); }
                 } catch (error) {
                     retryCount++;
                     if (retryCount < maxRetries) {
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
                     } else {
-                        console.error("Gemini API call failed after multiple retries:", error);
+                        console.error("Gemini API call failed:", error);
                         showMessage('Error generating AI Category: Failed to connect.');
                         return "AI Error";
                     }
                 }
             }
             
-            // 3. Process Result
             try {
                 const result = await response.json();
                 const text = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Error: No category generated.';
                 return text.replace(/['"]/g, '');
             } catch (e) {
-                console.error("Error parsing Gemini category response:", e);
-                showMessage('Error: Problem interpreting the AI\'s response.');
+                console.error("Error parsing Gemini response:", e);
                 return "AI Parse Error";
             } finally {
-                 // Reset UI font (onSnapshot will update content shortly after)
                 categoryCard.classList.add('text-2xl', 'md:text-3xl');
                 categoryCard.classList.remove('text-gray-400', 'text-xl');
             }
         };
 
-        // NEW FUNCTION: Suggest an answer based on the current letter and category
         const suggestAnswerWithGemini = async () => {
             const { letter, category } = currentGameState;
-            
             if (letter === '?' || category.includes('Welcome')) {
-                judgeResult.textContent = 'Please get new cards before asking for a suggestion!';
+                judgeResult.textContent = 'Please get new cards first!';
                 return;
             }
             
-            // Prepare for API call
             suggestAnswerBtn.disabled = true;
             judgeAnswerBtn.disabled = true;
             judgeResult.innerHTML = '<span class="spinner"></span> Thinking...';
 
             const systemPrompt = `You are a creative Slapegories player. Your task is to provide a single, valid, and creative example answer for the given category and letter. Your response MUST be ONLY the answer and nothing else. Do not include any introductory phrases, explanations, or formatting.`;
-            
             const userQuery = `Category: ${category}. Starting Letter: ${letter}.`;
 
             const payload = {
@@ -922,10 +959,7 @@
                 systemInstruction: { parts: [{ text: systemPrompt }] },
             };
 
-            let response = null;
-            let success = false;
-            let retryCount = 0;
-            let delay = 1000; 
+            let response = null, success = false, retryCount = 0, delay = 1000;
             const maxRetries = 3; 
 
             while (!success && retryCount < maxRetries) {
@@ -935,24 +969,19 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-
-                    if (response.ok) {
-                        success = true;
-                    } else if (response.status === 429) { 
+                    if (response.ok) { success = true; }
+                    else if (response.status === 429) { 
                         await new Promise(resolve => setTimeout(resolve, delay));
-                        delay *= 2; 
-                        retryCount++;
-                    } else {
-                        throw new Error(`API Error: ${response.status}`);
-                    }
+                        delay *= 2; retryCount++;
+                    } else { throw new Error(`API Error: ${response.status}`); }
                 } catch (error) {
                     retryCount++;
                     if (retryCount < maxRetries) {
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
                     } else {
-                        console.error("Gemini API call failed after multiple retries:", error);
-                        judgeResult.innerHTML = '<span class="text-red-400">Error suggesting answer. Try again later.</span>';
+                        console.error("Gemini API call failed:", error);
+                        judgeResult.innerHTML = '<span class="text-red-400">Error suggesting answer. Try again.</span>';
                         suggestAnswerBtn.disabled = false;
                         judgeAnswerBtn.disabled = false;
                         return;
@@ -966,12 +995,10 @@
             try {
                 const result = await response.json();
                 const text = result.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Error: No answer generated.';
-                
                 judgeResult.innerHTML = `<span class="text-yellow-400">Suggestion:</span> <span class="text-white font-bold">${text}</span>`;
-                
             } catch (e) {
-                console.error("Error parsing Gemini answer suggestion:", e);
-                judgeResult.innerHTML = '<span class="text-red-400">Error: Problem interpreting the suggestion.</span>';
+                console.error("Error parsing Gemini suggestion:", e);
+                judgeResult.innerHTML = '<span class="text-red-400">Error: Problem interpreting suggestion.</span>';
             }
         };
 
@@ -983,37 +1010,29 @@
                 judgeResult.textContent = 'Please get new cards before judging!';
                 return;
             }
-            
             if (!answer) {
                 judgeResult.textContent = 'Please type an answer to be judged.';
                 return;
             }
-
-            // Check starting letter locally first (mandatory rule check)
             if (answer.toUpperCase().charAt(0) !== letter) {
                 judgeResult.innerHTML = `<span class="text-red-400">INVALID:</span> Does not start with the letter **${letter}**.`;
                 return;
             }
 
-            // Prepare for API call
             judgeAnswerBtn.disabled = true;
             suggestAnswerBtn.disabled = true;
             judgeResult.innerHTML = '<span class="spinner"></span> Judging...';
 
             const systemPrompt = "You are the Slapegories Game Judge. Your task is to verify if a user's proposed answer is plausible and relevant for the given category. The starting letter is already verified locally, so focus only on the category relevance. Your response MUST start with 'VALID:' or 'INVALID:', followed by a brief, single-sentence justification.";
-            
             const userQuery = `Category: ${category}, Answer: ${answer}`;
 
             const payload = {
                 contents: [{ parts: [{ text: userQuery }] }],
-                tools: [{ "google_search": {} }], // Use search grounding for up-to-date knowledge
+                tools: [{ "google_search": {} }], 
                 systemInstruction: { parts: [{ text: systemPrompt }] },
             };
 
-            let response = null;
-            let success = false;
-            let retryCount = 0;
-            let delay = 1000; 
+            let response = null, success = false, retryCount = 0, delay = 1000;
             const maxRetries = 3; 
 
             while (!success && retryCount < maxRetries) {
@@ -1023,24 +1042,19 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-
-                    if (response.ok) {
-                        success = true;
-                    } else if (response.status === 429) { 
+                    if (response.ok) { success = true; }
+                    else if (response.status === 429) { 
                         await new Promise(resolve => setTimeout(resolve, delay));
-                        delay *= 2; 
-                        retryCount++;
-                    } else {
-                        throw new Error(`API Error: ${response.status}`);
-                    }
+                        delay *= 2; retryCount++;
+                    } else { throw new Error(`API Error: ${response.status}`); }
                 } catch (error) {
                     retryCount++;
                     if (retryCount < maxRetries) {
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
                     } else {
-                        console.error("Gemini API call failed after multiple retries:", error);
-                        judgeResult.innerHTML = '<span class="text-red-400">Error: Failed to connect to judge. Try again later.</span>';
+                        console.error("Gemini API call failed:", error);
+                        judgeResult.innerHTML = '<span class="text-red-400">Error: Failed to connect to judge.</span>';
                         judgeAnswerBtn.disabled = false;
                         suggestAnswerBtn.disabled = false;
                         return;
@@ -1051,63 +1065,50 @@
             judgeAnswerBtn.disabled = false;
             suggestAnswerBtn.disabled = false;
 
-
             try {
                 const result = await response.json();
                 const text = result.candidates?.[0]?.content?.parts?.[0]?.text || 'Error: No response from judge.';
                 
                 if (text.toUpperCase().startsWith('VALID:')) {
-                    const justification = text.substring(6).trim();
-                    judgeResult.innerHTML = `<span class="text-green-400">VALID!</span> ${justification}`;
+                    judgeResult.innerHTML = `<span class="text-green-400">VALID!</span> ${text.substring(6).trim()}`;
                 } else if (text.toUpperCase().startsWith('INVALID:')) {
-                    const justification = text.substring(8).trim();
-                    judgeResult.innerHTML = `<span class="text-red-400">INVALID.</span> ${justification}`;
+                    judgeResult.innerHTML = `<span class="text-red-400">INVALID.</span> ${text.substring(8).trim()}`;
                 } else {
-                    // Fallback if the LLM doesn't follow the exact format
                     judgeResult.innerHTML = `<span class="text-yellow-400">Judge's Ruling:</span> ${text}`;
                 }
-                
             } catch (e) {
                 console.error("Error parsing Gemini response:", e);
-                judgeResult.innerHTML = '<span class="text-red-400">Error: Problem interpreting the judge\'s ruling.</span>';
+                judgeResult.innerHTML = '<span class="text-red-400">Error: Problem interpreting ruling.</span>';
             }
         };
 
 
         // --- EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', () => {
-            initFirebase();
+            // Note: We are not using 'type=module' anymore, so Supabase is loaded globally.
+            initSupabase();
 
             changeLetterBtn.addEventListener('click', handleNewLetter);
             changeCategoryBtn.addEventListener('click', handleNewCategory);
             changeBothBtn.addEventListener('click', handleNewBoth);
-
             startTimerBtn.addEventListener('click', toggleTimer);
             resetTimerBtn.addEventListener('click', resetAndStopTimer);
-            
-            // NEW Listener for Suggest Answer
             suggestAnswerBtn.addEventListener('click', suggestAnswerWithGemini);
-            
             judgeAnswerBtn.addEventListener('click', verifyAnswerWithGemini);
+            
             answerInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    verifyAnswerWithGemini();
-                }
+                if (e.key === 'Enter') verifyAnswerWithGemini();
             });
 
-            // Scoreboard Listeners
             updatePlayersBtn.addEventListener('click', updatePlayerNames);
             scoreboardGrid.addEventListener('click', handleScoreIncrement);
             resetScoresBtn.addEventListener('click', resetScores);
             
-            // NEW: Game Mode Listeners
             gameModeRadios.forEach(radio => {
                 radio.addEventListener('change', handleGameModeChange);
             });
             joinGameBtn.addEventListener('click', joinGame);
 
-
-            // Category Source Listeners
             categorySourceRadios.forEach(radio => {
                 radio.addEventListener('change', (e) => {
                     const source = e.target.value;
@@ -1117,7 +1118,6 @@
                 });
             });
 
-            // Custom Category Management Listeners
             addCategoryBtn.addEventListener('click', () => {
                 const category = newCategoryInput.value.trim();
                 if (category) {
@@ -1144,3 +1144,4 @@
     </script>
 </body>
 </html>
+
